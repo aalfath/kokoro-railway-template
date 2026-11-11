@@ -1,0 +1,51 @@
+{
+	admin off
+	auto_https off
+	persist_config off
+}
+
+:{$PORT:8080} {
+	# Open: Railway's health check for the gateway itself, Kokoro's own
+	# health check, and a redirect from / to the web player.
+	handle /healthz {
+		respond "ok" 200
+	}
+	handle /health {
+		reverse_proxy {$KOKORO_URL}
+	}
+	handle / {
+		redir * /web/ 302
+	}
+
+	# API clients: the key as a Bearer token, or as xi-api-key / X-API-Key
+	# (ElevenLabs- and Cartesia-style clients). Kokoro checks it again.
+	@apikey {
+		header Authorization "Bearer {$KOKORO_API_KEY}"
+	}
+	@xikey {
+		header xi-api-key "{$KOKORO_API_KEY}"
+	}
+	@xapikey {
+		header X-API-Key "{$KOKORO_API_KEY}"
+	}
+	handle @apikey {
+		reverse_proxy {$KOKORO_URL}
+	}
+	handle @xikey {
+		reverse_proxy {$KOKORO_URL}
+	}
+	handle @xapikey {
+		reverse_proxy {$KOKORO_URL}
+	}
+
+	# Browsers: Basic auth (user "kokoro", password = the API key), then
+	# Caddy forwards with the Bearer key so the web player works.
+	handle {
+		basic_auth {
+			kokoro {$KOKORO_WEB_HASH}
+		}
+		reverse_proxy {$KOKORO_URL} {
+			header_up Authorization "Bearer {$KOKORO_API_KEY}"
+		}
+	}
+}
