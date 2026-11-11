@@ -1,7 +1,7 @@
 # Kokoro TTS on Railway
 
 Readable copies of the start scripts used by the Railway template
-"Kokoro TTS" (https://railway.com/deploy/kokoro-tts). The template itself runs official
+"Kokoro TTS" (https://railway.com/deploy/kokoro-tts-1). The template itself runs official
 images only; each start command unpacks the script shown here.
 
 | Service | Image | Script |
